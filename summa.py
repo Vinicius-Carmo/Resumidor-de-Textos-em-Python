@@ -7,16 +7,20 @@ import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
-try:
-    nltk.data.find('tokenizers/punkt')
-except:
-    nltk.download('punkt')
+# ---------- Garantir recursos NLTK ----------
+def garantir_nltk_resource(resource_path, download_name):
+    try:
+        nltk.data.find(resource_path)
+    except LookupError:
+        nltk.download(download_name, quiet=True)
 
-try:
-    nltk.data.find('corpora/stopwords')
-except:
-    nltk.download('stopwords')
+# Pontos importantes:
+garantir_nltk_resource('tokenizers/punkt', 'punkt')
+garantir_nltk_resource('corpora/stopwords', 'stopwords')
+# Algumas versões do NLTK mais recentes usam 'punkt_tab':
+garantir_nltk_resource('tokenizers/punkt_tab', 'punkt_tab')
 
+st.write("NLTK pronto!")
 
 st.markdown(
     """
