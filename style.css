@@ -1,0 +1,110 @@
+/* style.css */
+
+/* Fundo da página */
+body {
+    background-color: #0c0c0c !important;
+    color: #FFFFFF;
+    font-family: 'Josefin Sans', sans-serif !important;
+}
+
+/* Título */
+h1 {
+    color: #02b520de !important;
+    text-align: center;
+    margin-bottom: 30px;
+    font-family: 'Josefin Sans', sans-serif !important;
+}
+
+/* Texto */
+p, label, textarea, .stMarkdown {
+    font-size: 18px !important;
+    color: #f5f5f5 !important;
+    font-family: 'Josefin Sans', sans-serif !important;
+}
+
+/* Botão */
+div.stButton > button:first-child {
+    background-color: #02b520de ;
+    color: rgb(255, 255, 255) !important;
+    border-radius: 15px;
+    border: none;
+    padding: 0.4em 1.0em;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+div.stButton > button:first-child:hover {
+    background-color: #5324AB;
+    transform: scale(1.05);
+}
+
+/* Caixa de texto */
+/* ============================
+   OVERRIDE FOR TEXTAREA FOCUS
+   ============================ */
+
+/* Seletor do container textArea do Streamlit + textarea puro */
+.stTextArea textarea,
+textarea,
+div.stTextArea textarea,
+[data-testid="stAppViewContainer"] textarea {
+  background-color: #1b1f25 !important;
+  color: #ffffff !important;
+  border: 2px solid #5324AB !important; /* sua cor preferida (roxo) */
+  border-radius: 10px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  font-size: 15px !important;
+}
+/* ====== INPUT CENTRAL ====== */
+[data-testid="stNumberInput"] input {
+  background-color: #1b1f25 !important;
+  color: #ffffff !important;
+  border: 2px solid #5324AB !important;
+  border-radius: 10px 0 0 10px !important;
+  padding: 8px 10px !important;
+  font-size: 15px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ====== INPUT FOCADO ====== */
+[data-testid="stNumberInput"] input:focus,
+[data-testid="stNumberInput"] div:focus-within input {
+  border-color: #7b2cff !important;
+  box-shadow: 0 0 8px rgba(123, 44, 255, 0.4) !important;
+  outline: none !important;
+}
+
+/* ====== BOTÕES + e - ====== */
+[data-testid="stNumberInput"] button {
+  background-color: #02b520de !important;   /* verde */
+  color: #f5f5f5 !important;
+  border: none !important;
+  border-radius: none !important;
+  font-weight: bold !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+/* ====== HOVER ====== */
+[data-testid="stNumberInput"] button:hover {
+  background-color: #7b2cff !important;   /* roxo ao passar o mouse */
+  color: #ffffff !important;
+  transform: scale(1.05);
+}
+
+/* ====== FOCUS ====== */
+[data-testid="stNumberInput"] button:focus,
+[data-testid="stNumberInput"] button:focus-visible {
+  outline: none !important;
+  background-color: #7b2cff !important;   /* roxo no foco */
+  box-shadow: 0 0 8px rgba(123, 44, 255, 0.4) !important;
+  color: #ffffff !important;
+}
+
+
+[data-testid="stAppViewContainer"] * {
+  font-family: 'Lato', sans-serif !important;
+  box-sizing: border-box !important;
+}
