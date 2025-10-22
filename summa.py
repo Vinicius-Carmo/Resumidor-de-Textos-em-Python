@@ -20,8 +20,6 @@ garantir_nltk_resource('corpora/stopwords', 'stopwords')
 # Algumas versões do NLTK mais recentes usam 'punkt_tab':
 garantir_nltk_resource('tokenizers/punkt_tab', 'punkt_tab')
 
-st.write("NLTK pronto!")
-
 st.markdown(
     """
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +28,24 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+st.markdown("""
+    <style>
+        body {
+            background-color: #0c0c0c;
+            color: white;
+        }
+        [data-testid="stAppViewContainer"] {
+            background-color: #0c0c0c;
+        }
+        [data-testid="stHeader"] {
+            background: rgba(0,0,0,0);
+        }
+        [data-testid="stToolbar"] {
+            right: 2rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 def carregar_css(arquivo_css):
     with open(arquivo_css) as f:
