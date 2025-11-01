@@ -1,34 +1,37 @@
-/* style.css */
 
-/* Fundo da página */
 body {
     background-color: #0c0c0c !important;
     color: #FFFFFF;
     font-family: 'Josefin Sans', sans-serif !important;
+    min-width: 500px;
 }
-
-/* Título */
-h1 {
+.block-container {
+    max-width: 75%;
+    padding-top: 1.5rem;
+}
+h1, .stMarkdown {
     color: #02b520de !important;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 0px !important;
+    margin-top: 0px !important;
+    padding-top: 0px !important;
     font-family: 'Josefin Sans', sans-serif !important;
+    font-size: 50px !important;
 }
 
-/* Texto */
-p, label, textarea, .stMarkdown {
-    font-size: 18px !important;
+p, label, textarea {
+    text-align: left;
+    font-size: 20px !important;
     color: #f5f5f5 !important;
     font-family: 'Josefin Sans', sans-serif !important;
 }
 
-/* Botão */
 div.stButton > button:first-child {
     background-color: #02b520de ;
     color: rgb(255, 255, 255) !important;
-    border-radius: 15px;
+    border-radius: 15px !important;
     border: none;
-    padding: 0.4em 1.0em;
+    padding: 0.3em 1.0em !important;
     font-weight: bold;
     transition: 0.3s;
 }
@@ -38,12 +41,6 @@ div.stButton > button:first-child:hover {
     transform: scale(1.05);
 }
 
-/* Caixa de texto */
-/* ============================
-   OVERRIDE FOR TEXTAREA FOCUS
-   ============================ */
-
-/* Seletor do container textArea do Streamlit + textarea puro */
 .stTextArea textarea,
 textarea,
 div.stTextArea textarea,
@@ -56,8 +53,9 @@ div.stTextArea textarea,
   box-shadow: none !important;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
   font-size: 15px !important;
+  padding-top: 6px !important;
 }
-/* ====== INPUT CENTRAL ====== */
+
 [data-testid="stNumberInput"] input {
   background-color: #1b1f25 !important;
   color: #ffffff !important;
@@ -68,7 +66,6 @@ div.stTextArea textarea,
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ====== INPUT FOCADO ====== */
 [data-testid="stNumberInput"] input:focus,
 [data-testid="stNumberInput"] div:focus-within input {
   border-color: #7b2cff !important;
@@ -76,7 +73,7 @@ div.stTextArea textarea,
   outline: none !important;
 }
 
-/* ====== BOTÕES + e - ====== */
+
 [data-testid="stNumberInput"] button {
   background-color: #02b520de !important;   /* verde */
   color: #f5f5f5 !important;
@@ -87,14 +84,14 @@ div.stTextArea textarea,
   cursor: pointer !important;
 }
 
-/* ====== HOVER ====== */
+
 [data-testid="stNumberInput"] button:hover {
   background-color: #7b2cff !important;   /* roxo ao passar o mouse */
   color: #ffffff !important;
   transform: scale(1.05);
 }
 
-/* ====== FOCUS ====== */
+
 [data-testid="stNumberInput"] button:focus,
 [data-testid="stNumberInput"] button:focus-visible {
   outline: none !important;
@@ -103,8 +100,14 @@ div.stTextArea textarea,
   color: #ffffff !important;
 }
 
+audio{
+  transform: scale(1.0);
+  border: none !important;
+}
+audio::-webkit-media-controls-panel {
+  background-color: #1b1f25 !important;
+}
 
 [data-testid="stAppViewContainer"] * {
-  font-family: 'Lato', sans-serif !important;
   box-sizing: border-box !important;
 }

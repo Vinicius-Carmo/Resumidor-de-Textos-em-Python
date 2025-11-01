@@ -5,3 +5,10 @@ networkx
 scikit-learn
 nltk
 numpy
+io
+PyPDF2
+gtts
+Image
+pytesseract
+tesseract
+docx
