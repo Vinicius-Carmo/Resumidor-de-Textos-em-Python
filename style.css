@@ -6,7 +6,7 @@ body {
     min-width: 500px;
 }
 .block-container {
-    max-width: 75%;
+    max-width: 90%;
     padding-top: 1.5rem;
 }
 h1, .stMarkdown {
