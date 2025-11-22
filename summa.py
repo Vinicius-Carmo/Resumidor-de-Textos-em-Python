@@ -1,11 +1,10 @@
 import nltk
 import string
 import numpy as np
-import torch
 import networkx as nx
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, util
 from io import StringIO
 from PyPDF2 import PdfReader
 import docx
@@ -13,9 +12,9 @@ from PIL import Image
 import pytesseract
 from gtts import gTTS
 
-#pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# -------------------- Recursos NLTK --------------------
+@st.cache_resource
 def nltk_recursos(recurso, download):
     try:
         nltk.data.find(recurso)
@@ -26,8 +25,6 @@ nltk_recursos('tokenizers/punkt', 'punkt')
 nltk_recursos('corpora/stopwords', 'stopwords')
 nltk_recursos('tokenizers/punkt_tab', 'punkt_tab')
 
-
-# -------------------- Fontes Google --------------------
 st.markdown(
     """
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +34,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# -------------------- Estilo Geral --------------------
 st.markdown("""
     <style>
         body {
@@ -56,59 +52,87 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
+@st.cache_resource
 def carregar_css(arquivo_css):
-    with open(arquivo_css) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
+    try:
+        with open(arquivo_css) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except Exception as e:
+        st.warning(f'Não foi possível carregar o CSS: {e}')
 
 carregar_css("style.css")
 
-
-# -------------------- Stopwords --------------------
 stopwords = nltk.corpus.stopwords.words('portuguese')
 
-
-# -------------------- Pré-processamento --------------------
 def preprocessamento(texto):
     texto_formatado = texto.lower()
     tokens = nltk.word_tokenize(texto_formatado)
     tokens_noStop = [w for w in tokens if w not in stopwords and w not in string.punctuation]
     return ' '.join(tokens_noStop)
 
-
-# -------------------- Modelo de Embeddings --------------------
 @st.cache_resource
 def carregar_modelo():
-    return SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-
+    try:
+        return SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+    except Exception as e:
+        st.error(f'Erro ao carregar modelo: {e}')
+        return None
 
 modelo = carregar_modelo()
 
+def is_only_stopwords(texto):
+    palavras = [p.lower() for p in nltk.word_tokenize(texto)]
+    palavras_validas = [p for p in palavras if p.isalpha()] 
 
-# -------------------- Função de Sumarização --------------------
+    return all(p in stopwords for p in palavras_validas) and len(palavras_validas) > 0
+
 def sumarizar(texto, percentual_resumo):
-    sentencas_originais = nltk.sent_tokenize(texto)
-    sentencas_formatadas = [preprocessamento(s) for s in sentencas_originais]
+    try:
+        sentencas_originais = nltk.sent_tokenize(texto)
+    except Exception as e:
+        st.error(f'Não foi possível tokenizar o texto: {e}')
+        return texto
 
-    if len(sentencas_originais) == 0:
-        return "Nenhuma sentença válida encontrada no texto."
+    sentencas_filtradas = []
+    sentencas_formatadas = []
 
-    embeddings = modelo.encode(sentencas_formatadas)
-    matriz_similaridade = cosine_similarity(embeddings)
-    grafo_similaridade = nx.from_numpy_array(matriz_similaridade)
+    for s in sentencas_originais:
+        fmt = preprocessamento(s)
+        if fmt.strip(): 
+            sentencas_filtradas.append(s)
+            sentencas_formatadas.append(fmt)
+
+    if len(sentencas_filtradas) == 0:
+        return texto
+    if len(sentencas_originais) < 2:
+        return texto
+    if is_only_stopwords(texto):
+        return texto
+
+    try:
+        embeddings = modelo.encode(sentencas_formatadas)
+        embeddings = np.nan_to_num(embeddings)
+    except Exception as e:
+        st.error(f'Erro ao gerar embedding: {e}')
+    try:    
+        matriz_similaridade = cosine_similarity(embeddings)
+        grafo_similaridade = nx.from_numpy_array(matriz_similaridade)
+    except Exception as e:
+        st.error(f'Erro ao gerar matriz e grafo de similaridade: {e}')
 
     notas = nx.pagerank(grafo_similaridade)
     notas_ordenadas = sorted(((notas[i], s) for i, s in enumerate(sentencas_originais)), reverse=True)
 
-    qtd_sentencas = max(1, int(len(sentencas_originais) * percentual_resumo / 100))
+    try:
+        qtd_sentencas = max(1, int(len(sentencas_originais) * percentual_resumo / 100))
+    except Exception as e:
+        st.error(f'Erro ao calcular a quantidade de sentenças: {e}')
     melhores_sentencas = [notas_ordenadas[i][1] for i in range(qtd_sentencas)]
 
     resumo = ' '.join(melhores_sentencas)
     return resumo
 
 
-# -------------------- Interface Web ------------------
 st.title('𓅂 CARMO Resumo de textos')
 st.write("Resumo automático de textos em português com base em embeddings e PageRank.")
 
@@ -120,23 +144,32 @@ uploaded_file = st.file_uploader(
 texto_arquivo = ''
 
 if uploaded_file is not None:
-    if uploaded_file.type == 'text/plain':
-        stringio = StringIO(uploaded_file.getvalue().decode('utf-8'))
-        texto_arquivo = stringio.read()
+    try:
+        if uploaded_file.type == 'text/plain':
+            stringio = StringIO(uploaded_file.getvalue().decode('utf-8'))
+            texto_arquivo = stringio.read()
 
-    elif uploaded_file.type == 'application/pdf':
-        pdf_reader = PdfReader(uploaded_file)
-        texto_arquivo = ' '.join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
+        elif uploaded_file.type == 'application/pdf':
+            pdf_reader = PdfReader(uploaded_file)
+            texto_arquivo = ' '.join([page.extract_text() for page in pdf_reader.pages if page.extract_text()])
 
-    elif uploaded_file.type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                'application/msword']:
-        doc = docx.Document(uploaded_file)
-        texto_arquivo = '\n'.join([p.text for p in doc.paragraphs])
+        elif uploaded_file.type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                    'application/msword']:
+            try:
+                doc = docx.Document(uploaded_file)
+                texto_arquivo = '\n'.join([p.text for p in doc.paragraphs])
+            except Exception as e:
+                st.error(f"Erro ao abrir o DOCX: {e}")
 
-    elif uploaded_file.type.startswith('image/'):
-        img = Image.open(uploaded_file)
-        st.image(img, caption='Imagem enviada com sucesso', use_container_width=True)
-        texto_arquivo = pytesseract.image_to_string(img, lang='por')
+        elif uploaded_file.type.startswith('image/'):
+            try:
+                img = Image.open(uploaded_file)
+                st.image(img, caption='Imagem enviada com sucesso', use_container_width=True)
+                texto_arquivo = pytesseract.image_to_string(img, lang='por')
+            except Exception as e:
+                st.error(f"Erro ao processar a imagem: {e}")
+    except Exception as e:
+        st.error(f'Erro ao abrir arquivo: {e}')
 
 texto_usuario = st.text_area(
     placeholder='No mínimo 2 frases...',
@@ -151,22 +184,35 @@ if "percentual" not in st.session_state:
 percentual = st.number_input(
     "Escolha o percentual de resumo:",
     min_value=1, max_value=100,
-    value=st.session_state.percentual, step=1
+    value=st.session_state.percentual, step=10
 )
 
-st.session_state.percentual = percentual
+if percentual not in range(1,100):
+    st.error('O percentual não pode ser menor que 1 ou maior que 100.')
+else:
+    st.session_state.percentual = percentual
 
 if st.button("Gerar Resumo"):
     if texto_usuario.strip():
         st.subheader("Resumo gerado:")
-        with st.spinner("Gerando... Aguarde alguns segundos."):
-            resumo = sumarizar(texto_usuario, percentual)
+        try:
+            with st.spinner("Gerando... Aguarde alguns segundos."):
+                resumo = sumarizar(texto_usuario, percentual)
+        except Exception as e:
+            st.error(f'Erro ao gerar resumo: {e}')
+        try:
             tts = gTTS(resumo, lang = 'pt')
             tts.save('audio.mp3')
             audio_arquivo = open('audio.mp3', 'rb')
+        except Exception as e:
+            st.error(f'Erro ao salvar e abrir o áudio: {e}')
+        try:
             audioRead = audio_arquivo.read()
             st.audio(audioRead, format = 'audio/mp3')
+        except Exception as e:
+            st.error(f'Erro ao ler o áudio: {e}')
 
         st.write(resumo)
+
     else:
         st.warning("Por favor, insira um texto para resumir.")
